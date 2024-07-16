@@ -1,0 +1,40 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:${postgres_version}
+    env_file:
+      - .env.postgres
+    volumes:
+      - db:/var/lib/postgresql/data/pgdata
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - odoo_network
+    
+
+  odoo:
+    image: odoo:${odoo_version}
+    env_file:
+      - .env.odoo
+    depends_on:
+      - postgres
+    ports:
+      - "${ODOO_PORT}:8069"
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./config/odoo.conf:/etc/odoo/odoo.conf
+      - ./addons:/mnt/extra-addons/custom_addon
+      - ./init-db/filestore:/tmp
+    networks:
+      - odoo_network
+    container_name: CONTAINER_NAME_TEMPLATE
+    restart: on-failure
+    
+
+networks:
+  odoo_network:
+    driver: bridge
+
+volumes:
+  odoo-data:
+  db:
+

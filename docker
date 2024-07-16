@@ -1,0 +1,8 @@
+psql: warning: extra command-line argument "dt" ignored
+psql (16.3 (Debian 16.3-1.pgdg120+1))
+Type "help" for help.
+
+[?2004htest=# ddd^C[?2004l
+[?2004htest=# >qqqqq
+[?2004l[?2004htest-# 
+[?2004l[?2004htest-# 
