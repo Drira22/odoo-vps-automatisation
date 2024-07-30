@@ -5,9 +5,13 @@ import os
 
 app = Flask(__name__)
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Execute the Docker command to get used ports and parse them
+    command = "docker ps --format '{{.Ports}}' | grep -o '0\\.0\\.0\\.0:[0-9]\\+' | awk -F':' '{print $2}' | tr '\n' ','"
+    result = subprocess.run(command, capture_output=True, text=True, shell=True)
+    used_ports = result.stdout.strip().strip(',')
+
     if request.method == 'POST':
         odoo_port = request.form['odoo_port']
         odoo_version = request.form.get('odoo_version', 'latest')  # Default to 'latest' if not provided
@@ -24,8 +28,7 @@ def index():
         # Redirect to the Odoo page
         return redirect(f'http://localhost:{odoo_port}')
 
-    return render_template('index.html')
-
+    return render_template('index.html', used_ports=used_ports)
 
 if __name__ == '__main__':
     app.run(debug=True)
