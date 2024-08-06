@@ -1,0 +1,78 @@
+/* styles.css */
+
+/* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Container for the form */
+.container {
+    background-color: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Header styling */
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    text-align: center;
+}
+
+/* Form label styling */
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Form input styling */
+form input[type="text"],
+form input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Button styling */
+form input[type="submit"] {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+/* Button hover effect */
+form input[type="submit"]:hover {
+    background-color: #2980b9;
+}
+
+/* Loading message styling */
+#loadingMessage {
+    font-weight: bold;
+    color: #e74c3c;
+    margin-top: 20px;
+    text-align: center;
+    display: none; /* Initially hidden */
+}

@@ -2,33 +2,27 @@
 <html>
 <head>
     <title>Odoo Setup</title>
-    <style>
-        /* Simple CSS to style the loading message and hide it initially */
-        #loadingMessage {
-            display: none;
-            font-weight: bold;
-            color: blue;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Odoo Setup Form</h1>
-    <form action="/" method="post" onsubmit="showLoadingMessage()">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+    <div class="container">
+        <h1>Odoo Setup Form</h1>
+        <form action="/" method="post" onsubmit="showLoadingMessage()">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
 
-        <label for="odoo_version">Odoo Version (optional):</label>
-        <input type="text" id="odoo_version" name="odoo_version"><br><br>
+            <label for="odoo_version">Odoo Version (optional):</label>
+            <input type="text" id="odoo_version" name="odoo_version"><br><br>
 
-        <label for="postgres_version">PostgreSQL Version (optional):</label>
-        <input type="text" id="postgres_version" name="postgres_version"><br><br>
+            <label for="postgres_version">PostgreSQL Version (optional):</label>
+            <input type="text" id="postgres_version" name="postgres_version"><br><br>
 
-        <input type="submit" value="Start Odoo">
-    </form>
+            <input type="submit" value="Start Odoo">
+        </form>
 
-    <div id="loadingMessage">
-        This may take some time, so please wait and don't leave the page...
+        <div id="loadingMessage">
+            This may take some time, so please wait and don't leave the page...
+        </div>
     </div>
 
     <script>
