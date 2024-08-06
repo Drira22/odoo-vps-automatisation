@@ -4,16 +4,27 @@
 
 
 hello this is my project and i will explain my problem ! the project is about to create odoo container with docker and postgresql and to use in  the containers on different ports the same database i have in my computer locally as dump.sql file and filestore directory ! so i used these files :
-first the .sh file:
+first the .sh file named odoo-start.sh:
 #!/bin/bash
 
+# Ensure the script is run with three arguments
+if [ "$#" -ne 3 ]; then
+    echo "Usage: $0 <odoo_version> <postgres_version> <odoo_port>"
+    exit 1
+fi
 
-#######################port check############################################
+# Assign arguments to variables
+ODOO_PORT=$1
+postgres_version=$2
+odoo_version=$3
+
 
 # Function to check if a port is in use
 function check_port {
     local port=$1
-    for p in "${ports_list[@]}"; do
+    local used_ports
+    used_ports=$(docker ps --format "{{.Ports}}" | grep -o '0\.0\.0\.0:[0-9]\+' | awk -F':' '{print $2}')
+    for p in $used_ports; do
         if [[ "$p" == "$port" ]]; then
             return 0
         fi
@@ -21,72 +32,45 @@ function check_port {
     return 1
 }
 
-# Initialize array to store ports
-ports_list=()
-
-# Read ports into the array using process substitution
-while IFS= read -r port; do
-    ports_list+=("$port")
-done < <(docker ps --format "{{.Ports}}" | grep -o '0\.0\.0\.0:[0-9]\+' | awk -F':' '{print $2}')
-
-echo "Mapped ports on the host:"
-echo "${ports_list[@]}"
-
-# Prompt user for Odoo port and check if it's in use
-while true; do
-    echo 'Enter the port number for Odoo: '
-    read ODOO_PORT
-    if check_port "$ODOO_PORT"; then
-        echo "Port $ODOO_PORT is already in use."
-    else
-        echo "Port $ODOO_PORT is not in use. Okay!"
-        break
-    fi
-done
-
-##############################################################################################""""
-
-
-# Assign the variables
-echo 'Saisir la version d odoo: '
-read odoo_version
-echo 'Saisir la version de postgres: '
-read postgres_version
+# Check if the port is in use
+if check_port "$ODOO_PORT"; then
+    echo "Port $ODOO_PORT is already in use."
+    exit 1
+else
+    echo "Port $ODOO_PORT is not in use. Proceeding."
+fi
 
 # Function to check if a value is in an array
 function contains() {
-  local value="$1"
-  shift
-  for v in "$@"; do
-    if [[ "$v" == "$value" ]]; then
-      return 0
-    fi
-  done
-  return 1
+    local value="$1"
+    shift
+    for v in "$@"; do
+        if [[ "$v" == "$value" ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
-#######################odoo version check############################################
-# odoo allowed versions
+# Allowed Odoo versions
 odoo_versions=("16.0" "15.0" "14.0" "13.0" "12.0" "11.0" "10.0" "9.0" "8.0" "7.0" "6.1" "6.0" "5.0" "4.0" "3.0" "2.0" "1.0")
-# Validate the odoo_version
+# Validate the Odoo version
 if contains "$odoo_version" "${odoo_versions[@]}"; then
-  echo "Odoo version $odoo_version is valid."
+    echo "Odoo version $odoo_version is valid."
 else
-  echo "No odoo version mentionned. Defaulting to 'latest'."
-  odoo_version="latest"
+    echo "Odoo version $odoo_version is not valid. Defaulting to 'latest'."
+    odoo_version="latest"
 fi
 
-#######################postgres version check############################################
-# postgres allowed versions
+# Allowed Postgres versions
 postgres_versions=("15" "14" "13" "12" "11" "10" "9.6" "9.5" "9.4" "9.3" "alpine" "13-alpine" "12-alpine")
-# Validate the postgres_version
+# Validate the Postgres version
 if contains "$postgres_version" "${postgres_versions[@]}"; then
-  echo "Postgresql version $postgres_version is valid."
+    echo "Postgres version $postgres_version is valid."
 else
-  echo "No Postgresql version mentionned is not valid. Defaulting to 'latest'."
-  postgres_version="latest"
+    echo "Postgres version $postgres_version is not valid. Defaulting to 'latest'."
+    postgres_version="latest"
 fi
-
 
 # Determine the container name based on the port
 container_name="odoo-${ODOO_PORT}"
@@ -97,11 +81,21 @@ export odoo_version
 export postgres_version
 export container_name
 
-
-
 # Run Docker Compose with the updated environment variables
 sed "s/ODOO_PORT_TEMPLATE/$ODOO_PORT/g; s/CONTAINER_NAME_TEMPLATE/$container_name/g" docker-compose.yml.template > docker-compose.yml
 docker-compose -p $container_name up -d
+
+# Wait until the final initialization of the Odoo container and load of DB
+log_message="HTTP service (werkzeug) running"
+until docker logs $container_name 2>&1 | grep -q "$log_message"; do
+    sleep 1
+done
+
+# Copy the files of filestore to the corresponding directory
+docker exec -it $container_name cp -r ./tmp /var/lib/odoo/.local/share/Odoo/filestore
+
+# Create a file to signal completion
+touch /tmp/odoo_ready_$ODOO_PORT
 
 
 second the docker compose template:
@@ -116,6 +110,7 @@ services:
       - ./init-db:/docker-entrypoint-initdb.d
     networks:
       - odoo_network
+    
 
   odoo:
     image: odoo:${odoo_version}
@@ -129,10 +124,12 @@ services:
       - odoo-data:/var/lib/odoo
       - ./config/odoo.conf:/etc/odoo/odoo.conf
       - ./addons:/mnt/extra-addons/custom_addon
-      - ./init-db/filestore:/var/lib/odoo/.local/share/Odoo/filestore
+      - ./init-db/filestore:/tmp
     networks:
       - odoo_network
     container_name: CONTAINER_NAME_TEMPLATE
+    restart: on-failure
+    
 
 networks:
   odoo_network:
@@ -141,7 +138,6 @@ networks:
 volumes:
   odoo-data:
   db:
-
 
 
 
@@ -168,6 +164,97 @@ db_user = odoo
 db_password = odoo
 admin_passwd = mysuperpassword
 
+
+also here is the falsk named app.py:
+from flask import Flask, render_template, request, redirect, url_for
+import subprocess
+import time
+import os
+from flask_mail import Mail, Message
+
+app = Flask(__name__)
+
+# initialize mail configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'khalildrira61@gmail.com'
+app.config['MAIL_PASSWORD'] = 'buix gohl lnyw uusg'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    # Execute the Docker command to get used ports and parse them
+    command = "docker ps --format '{{.Ports}}' | grep -o '0\\.0\\.0\\.0:[0-9]\\+' | awk -F':' '{print $2}' | tr '\n' ','"
+    result = subprocess.run(command, capture_output=True, text=True, shell=True)
+    used_ports = result.stdout.strip().strip(',')
+
+    if request.method == 'POST':
+        odoo_port = request.form['odoo_port']
+        odoo_version = request.form.get('odoo_version', 'latest')  # Default to 'latest' if not provided
+        postgres_version = request.form.get('postgres_version', 'latest')  # Default to 'latest' if not provided
+        # get the mail of the user
+        user_email = request.form['email']
+
+        # Pass the values to the shell script
+        subprocess.run(['./start-odoo.sh', odoo_port, postgres_version, odoo_version])
+
+        # Wait for the signal file to be created
+        signal_file = f'/tmp/odoo_ready_{odoo_port}'
+        while not os.path.exists(signal_file):
+            time.sleep(1)  # Check every second
+
+        # url sent via mail
+        msg = Message("Your Odoo Instance is Ready",
+                      sender="khalildrira61@gmail.com",
+                      recipients=[user_email])
+        msg.body = f"Your Odoo instance is ready at http://localhost:{odoo_port}"
+        mail.send(msg)
+
+        return "An email has been sent to you with the Odoo URL."
+
+        # Redirect to the Odoo page
+        return redirect(f'http://localhost:{odoo_port}')
+
+    return render_template('index.html', used_ports=used_ports)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+and the index.html:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Odoo Setup</title>
+</head>
+<body>
+    <h1>Odoo Setup Form</h1>
+     <div>
+        <h2>Currently Used Ports:</h2>
+        <p>{{ used_ports }}</p>
+    </div>
+    <form action="/" method="post">
+        <label for="odoo_port">Odoo Port:</label>
+        <input type="text" id="odoo_port" name="odoo_port" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="odoo_version">Odoo Version (optional):</label>
+        <input type="text" id="odoo_version" name="odoo_version"><br><br>
+
+        <label for="postgres_version">PostgreSQL Version (optional):</label>
+        <input type="text" id="postgres_version" name="postgres_version"><br><br>
+
+        <input type="submit" value="Start Odoo">
+    </form>
+</body>
+</html>
 
 
 
