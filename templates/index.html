@@ -2,17 +2,19 @@
 <html>
 <head>
     <title>Odoo Setup</title>
+    <style>
+        /* Simple CSS to style the loading message and hide it initially */
+        #loadingMessage {
+            display: none;
+            font-weight: bold;
+            color: blue;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Odoo Setup Form</h1>
-     <div>
-        <h2>Currently Used Ports:</h2>
-        <p>{{ used_ports }}</p>
-    </div>
-    <form action="/" method="post">
-        <label for="odoo_port">Odoo Port:</label>
-        <input type="text" id="odoo_port" name="odoo_port" required><br><br>
-
+    <form action="/" method="post" onsubmit="showLoadingMessage()">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required><br><br>
 
@@ -24,5 +26,16 @@
 
         <input type="submit" value="Start Odoo">
     </form>
+
+    <div id="loadingMessage">
+        This may take some time, so please wait and don't leave the page...
+    </div>
+
+    <script>
+        function showLoadingMessage() {
+            // Display the loading message when the form is submitted
+            document.getElementById('loadingMessage').style.display = 'block';
+        }
+    </script>
 </body>
 </html>

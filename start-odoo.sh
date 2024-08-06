@@ -1,16 +1,14 @@
 #!/bin/bash
 
-# Ensure the script is run with three arguments
-if [ "$#" -ne 3 ]; then
-    echo "Usage: $0 <odoo_version> <postgres_version> <odoo_port>"
+# Ensure the script is run with two arguments
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 <odoo_version> <postgres_version>"
     exit 1
 fi
 
 # Assign arguments to variables
-ODOO_PORT=$1
+odoo_version=$1
 postgres_version=$2
-odoo_version=$3
-
 
 # Function to check if a port is in use
 function check_port {
@@ -25,13 +23,13 @@ function check_port {
     return 1
 }
 
-# Check if the port is in use
-if check_port "$ODOO_PORT"; then
-    echo "Port $ODOO_PORT is already in use."
-    exit 1
-else
-    echo "Port $ODOO_PORT is not in use. Proceeding."
-fi
+# Find the first available port starting from 8069
+ODOO_PORT=8069
+while check_port "$ODOO_PORT"; do
+    ((ODOO_PORT++))
+done
+
+echo "Using Odoo port: $ODOO_PORT"
 
 # Function to check if a value is in an array
 function contains() {

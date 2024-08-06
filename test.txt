@@ -3,6 +3,9 @@
       - ./init-db:/docker-entrypoint-initdb.d
 
 
+gunicorn --bind 0.0.0.0:5000 app:app
+
+
 hello this is my project and i will explain my problem ! the project is about to create odoo container with docker and postgresql and to use in  the containers on different ports the same database i have in my computer locally as dump.sql file and filestore directory ! so i used these files :
 first the .sh file named odoo-start.sh:
 #!/bin/bash
