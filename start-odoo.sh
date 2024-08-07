@@ -3,7 +3,7 @@
 # Ensure the script is run with two arguments
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <odoo_version> <postgres_version>"
-    exit 1
+    
 fi
 
 # Assign arguments to variables
@@ -24,7 +24,7 @@ function check_port {
 }
 
 # Find the first available port starting from 8069
-ODOO_PORT=8069
+ODOO_PORT=8070
 while check_port "$ODOO_PORT"; do
     ((ODOO_PORT++))
 done

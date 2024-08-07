@@ -1,0 +1,127 @@
+Certainly! Here's a summary of the changes we made to get your Flask application with Gunicorn, Celery, and Nginx working on your VPS, using a UNIX socket for communication:
+
+### Summary of Changes
+
+#### 1. Gunicorn Setup
+
+- **Systemd Service for Gunicorn:**
+
+  - We created a systemd service file for Gunicorn to ensure it starts automatically on boot and runs in the background.
+
+  - **Service File Location:** `/etc/systemd/system/gunicorn.service`
+
+  - **Key Configuration:**
+    ```ini
+    [Unit]
+    Description=Gunicorn instance to serve my Flask app
+    After=network.target
+
+    [Service]
+    User=ubuntu
+    Group=www-data
+    WorkingDirectory=/home/ubuntu/odoo-vps-automatisation
+    ExecStart=/home/ubuntu/.local/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock -m 007 app:app
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+  - **Commands:**
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl enable gunicorn
+    sudo systemctl start gunicorn
+    ```
+
+#### 2. Celery Setup
+
+- **Systemd Service for Celery:**
+
+  - We created a systemd service file for Celery to manage the background tasks using a UNIX socket.
+
+  - **Service File Location:** `/etc/systemd/system/celery.service`
+
+  - **Key Configuration:**
+    ```ini
+    [Unit]
+    Description=Celery Service
+    After=network.target
+
+    [Service]
+    Type=forking
+    User=ubuntu
+    Group=www-data
+    WorkingDirectory=/home/ubuntu/odoo-vps-automatisation
+    Environment="PATH=/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ExecStart=/home/ubuntu/.local/bin/celery multi start worker -A app.celery --loglevel=info --workdir=/home/ubuntu/odoo-vps-automatisation --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log
+    ExecStop=/home/ubuntu/.local/bin/celery multi stopwait worker --pidfile=/var/run/celery/%n.pid
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+  - **Commands:**
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl enable celery
+    sudo systemctl start celery
+    ```
+
+- **Directories for Celery:**
+
+  - Created directories for Celery's PID files and logs, ensuring they have the correct permissions:
+    ```bash
+    sudo mkdir -p /var/run/celery
+    sudo mkdir -p /var/log/celery
+    sudo chown ubuntu:www-data /var/run/celery
+    sudo chown ubuntu:www-data /var/log/celery
+    ```
+
+#### 3. Nginx Configuration
+
+- **Nginx Configuration:**
+
+  - Configured Nginx to proxy requests to Gunicorn via a UNIX socket.
+
+  - **Configuration File Location:** `/etc/nginx/sites-available/odoo_flask`
+
+  - **Key Configuration:**
+    ```nginx
+    server {
+        listen 80;
+        server_name vps-8c27c89c.vps.ovh.net;
+
+        location / {
+            proxy_pass http://unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /static {
+            alias /home/ubuntu/odoo-vps-automatisation/static;
+        }
+    }
+    ```
+
+  - **Commands:**
+    ```bash
+    sudo nginx -t  # Test the configuration for syntax errors
+    sudo systemctl restart nginx
+    ```
+
+#### 4. Flask Application Changes
+
+- **Application Factory Pattern:**
+
+  - Refactored the Flask application to use the application factory pattern for better context management with Celery.
+
+  - **Key Changes in `app.py`:**
+    - Created `create_app()` function to initialize the Flask app.
+    - Used `make_celery()` to initialize Celery with application context management.
+  
+  - **Task Management:**
+    - Ensured that Celery tasks are executed with an application context using `ContextTask`.
+
+By following these steps, you set up your Flask application with Gunicorn, Celery, and Nginx to run automatically on boot and manage background tasks efficiently. Let me know if you have any more questions or need further clarification!
