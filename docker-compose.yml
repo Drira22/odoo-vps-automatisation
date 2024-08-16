@@ -26,7 +26,7 @@ services:
       - ./init-db/filestore:/tmp
     networks:
       - odoo_network
-    container_name: odoo-8070
+    container_name: odoo-8071
     restart: on-failure
     
 

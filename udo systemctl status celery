@@ -1,0 +1,21 @@
+[0;1;32m●[0m gunicorn.service - Gunicorn instance to serve my Flask app
+     Loaded: loaded (/etc/systemd/system/gunicorn.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Fri 2024-08-16 09:48:46 UTC; 7s ago
+   Main PID: 61553 (gunicorn)
+      Tasks: 4 (limit: 2266)
+     Memory: 97.1M
+     CGroup: /system.slice/gunicorn.service
+             ├─61553 /usr/bin/python3 /home/ubuntu/.local/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock -m 007 app:app
+             ├─61575 /usr/bin/python3 /home/ubuntu/.local/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock -m 007 app:app
+             ├─61576 /usr/bin/python3 /home/ubuntu/.local/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock -m 007 app:app
+             └─61577 /usr/bin/python3 /home/ubuntu/.local/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock -m 007 app:app
+
+Aug 16 09:48:46 vps-8c27c89c systemd[1]: gunicorn.service: Succeeded.
+Aug 16 09:48:46 vps-8c27c89c systemd[1]: Stopped Gunicorn instance to serve my Flask app.
+Aug 16 09:48:46 vps-8c27c89c systemd[1]: Started Gunicorn instance to serve my Flask app.
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61553]: [2024-08-16 09:48:47 +0000] [61553] [INFO] Starting gunicorn 20.1.0
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61553]: [2024-08-16 09:48:47 +0000] [61553] [INFO] Listening at: unix:/home/ubuntu/odoo-vps-automatisation/myflaskapp.sock (61553)
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61553]: [2024-08-16 09:48:47 +0000] [61553] [INFO] Using worker: sync
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61575]: [2024-08-16 09:48:47 +0000] [61575] [INFO] Booting worker with pid: 61575
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61576]: [2024-08-16 09:48:47 +0000] [61576] [INFO] Booting worker with pid: 61576
+Aug 16 09:48:47 vps-8c27c89c gunicorn[61577]: [2024-08-16 09:48:47 +0000] [61577] [INFO] Booting worker with pid: 61577
