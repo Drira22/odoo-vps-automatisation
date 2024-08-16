@@ -1,5 +1,3 @@
-/* styles.css */
-
 /* General body styling */
 body {
     font-family: Arial, sans-serif;
@@ -41,7 +39,9 @@ form label {
 
 /* Form input styling */
 form input[type="text"],
-form input[type="email"] {
+form input[type="email"],
+form input[type="password"],
+form input[type="number"] {
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;

@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+#exec > /home/ubuntu/odoo-vps-automatisation/start-odoo.log 2>&1
 
 # Ensure the script is run with two arguments
 if [ "$#" -ne 2 ]; then
@@ -82,8 +84,15 @@ until docker logs $container_name 2>&1 | grep -q "$log_message"; do
     sleep 1
 done
 
+
+sleep 10
 # Copy the files of filestore to the corresponding directory
-docker exec -it $container_name cp -r ./tmp /var/lib/odoo/.local/share/Odoo/filestore
+echo "Starting filestore copy..."
+if docker exec -i $container_name cp -r ./tmp /var/lib/odoo/.local/share/Odoo/filestore; then
+    echo "Filestore copied successfully."
+else
+    echo "Filestore copy failed."
+fi
 
 # Create a file to signal completion
 touch /tmp/odoo_ready_$ODOO_PORT
