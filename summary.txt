@@ -1,55 +1,6 @@
-### Summary of Your Work on the Odoo and PostgreSQL Docker Setup
-
-1. **Initial Setup and Configuration:**
-   - Created a shell script (`start-odoo.sh`) to automate the deployment of Odoo and PostgreSQL using Docker and Docker Compose.
-   - Developed a Docker Compose template (`docker-compose.yml.template`) to define the services, networks, and volumes required for Odoo and PostgreSQL.
-   - Implemented a Flask web application (`app.py`) with an HTML form (`index.html`) to accept user input for Odoo version, PostgreSQL version, and port number.
-   - Ensured the shell script validates user inputs and checks for port availability.
-
-2. **Docker Compose Template:**
-   - Defined PostgreSQL and Odoo services with environment variables for versions.
-   - Configured volumes for persistent data storage for PostgreSQL and Odoo.
-   - Used a network bridge to allow communication between services.
-
-3. **Automation Enhancements:**
-   - Updated the shell script to check for specific log messages indicating that Odoo has started successfully.
-   - Implemented logic to copy filestore data into the Odoo container after it is fully initialized.
-   - Ensured the Flask application waits for the container setup to complete before redirecting to the Odoo web page.
-
-4. **Persistent Data Handling:**
-   - Adjusted Docker Compose configuration to ensure the PostgreSQL data is stored in a named volume (`pgdata`) for persistence.
-   - Modified initialization scripts to avoid re-initializing the database if it already exists.
-   - Used Docker volumes to ensure the database and Odoo data persist across container restarts.
-
-### Key Components and Files
-
-1. **Shell Script (`start-odoo.sh`):**
-   - Validates input parameters and checks port availability.
-   - Configures environment variables for Docker Compose.
-   - Uses Docker Compose to start the containers.
-   - Waits for Odoo to be fully initialized before proceeding.
-   - Copies filestore data into the Odoo container.
-
-2. **Docker Compose Template (`docker-compose.yml.template`):**
-   - Defines services for Odoo and PostgreSQL.
-   - Configures environment variables and volumes for persistent data storage.
-   - Sets up a network for service communication.
-
-3. **Flask Application (`app.py`):**
-   - Hosts a web page for user input.
-   - Executes the shell script with user-provided parameters.
-   - Waits for container setup completion and redirects to the Odoo web page.
-
-4. **HTML Form (`index.html`):**
-   - Collects user input for Odoo version, PostgreSQL version, and port number.
-   - Submits the data to the Flask application.
-
-5. **Initialization Scripts (`init-db`):**
-   - Contains SQL scripts to initialize the PostgreSQL database.
-   - Ensures the database is not re-initialized if it already exists.
-
-### Current Status
-
-- The system works perfectly in terms of launching Odoo and PostgreSQL containers via the web interface.
-- The database remains persistent across container restarts.
-- The Flask application correctly waits for the Odoo container to be fully set up before redirecting the user.
+client = ovh.Client(
+    endpoint='ovh-eu',  
+    application_key='a8b1192f4fc8e8bc',
+    application_secret='de915d69df597c10a0ac9c78136b93c7',
+    consumer_key='a32112375888cff5d006fd91a67869bc'
+)
