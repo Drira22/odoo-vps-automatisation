@@ -1,0 +1,4 @@
+sudo systemctl reload nginx
+sudo systemctl restart gunicorn
+sudo systemctl restart celery
+sudo systemctl restart redis
