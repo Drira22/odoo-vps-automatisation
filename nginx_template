@@ -13,3 +13,4 @@ server {
         alias /home/ubuntu/odoo-vps-automatisation/static;
     }
 }
+

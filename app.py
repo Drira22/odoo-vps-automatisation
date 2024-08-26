@@ -6,6 +6,10 @@ from flask_mail import Mail, Message
 from celery import Celery
 import jinja2
 import ovh
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Create the Mail instance
 mail = Mail()
@@ -14,13 +18,13 @@ mail = Mail()
 def create_app():
     app = Flask(__name__)
 
-    # Initialize mail configuration
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 465
-    app.config['MAIL_USERNAME'] = 'khalildrira61@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'buix gohl lnyw uusg'
-    app.config['MAIL_USE_TLS'] = False
-    app.config['MAIL_USE_SSL'] = True
+    # Initialize mail configuration from environment variables
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
+    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
     mail.init_app(app)
 
     # Celery configuration
@@ -68,12 +72,12 @@ def create_nginx_config(subdomain, output_text):
         else:
             print(f"Nginx config file created: {nginx_config_path}")
 
-        # Symlink to sites-enabled with `sudo`
+        # Symlink to sites-enabled with sudo
         nginx_enabled_path = f"/etc/nginx/sites-enabled/{subdomain}"
         if not os.path.exists(nginx_enabled_path):
             subprocess.run(['sudo', 'ln', '-s', nginx_config_path, nginx_enabled_path], check=True)
 
-        # Reload Nginx with `sudo`
+        # Reload Nginx with sudo
         subprocess.run(['sudo', 'nginx', '-s', 'reload'], check=True)
 
     except Exception as e:
@@ -108,9 +112,9 @@ def create_docker_containers(odoo_version, postgres_version, user_email, user_na
     # Create the subdomain using the OVH API
     client = ovh.Client(
         endpoint='ovh-eu',
-        application_key='a8b1192f4fc8e8bc',
-        application_secret='de915d69df597c10a0ac9c78136b93c7',
-        consumer_key='a32112375888cff5d006fd91a67869bc'
+        application_key=os.getenv('OVH_APPLICATION_KEY'),
+        application_secret=os.getenv('OVH_APPLICATION_SECRET'),
+        consumer_key=os.getenv('OVH_CONSUMER_KEY')
     )
 
     subdomain = f"{user_name}.exploit-consult.com"
@@ -118,7 +122,7 @@ def create_docker_containers(odoo_version, postgres_version, user_email, user_na
         client.post('/domain/zone/exploit-consult.com/record',
                     fieldType='A',
                     subDomain=user_name,
-                    target='51.75.253.214')  # Replace with your VPS IP
+                    target=os.getenv('VPS_IP'))  # Use the VPS IP from .env
         client.post('/domain/zone/exploit-consult.com/refresh')
     except ovh.exceptions.APIError as e:
         return f"Failed to create subdomain: {str(e)}"
@@ -126,7 +130,7 @@ def create_docker_containers(odoo_version, postgres_version, user_email, user_na
     # Create Nginx configuration dynamically
     template_loader = jinja2.FileSystemLoader(searchpath="./")
     template_env = jinja2.Environment(loader=template_loader)
-    template_file = "nginx_template"  
+    template_file = "nginx_template"
     template = template_env.get_template(template_file)
 
     # Generate the configuration file
@@ -138,7 +142,7 @@ def create_docker_containers(odoo_version, postgres_version, user_email, user_na
     # Send URL via email
     try:
         msg = Message("Your Odoo Instance is Ready",
-                      sender="khalildrira61@gmail.com",
+                      sender=os.getenv('MAIL_USERNAME'),
                       recipients=[user_email])
         msg.body = f"Your Odoo instance is ready at http://{subdomain}"
         mail.send(msg)

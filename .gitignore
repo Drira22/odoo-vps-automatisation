@@ -1,0 +1,4 @@
+# Environment files to ignore
+.env
+.env.odoo
+.env.postgres

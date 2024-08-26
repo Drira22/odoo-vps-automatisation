@@ -1,38 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Odoo Setup</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container mt-5">
         <h1>Odoo Setup Form</h1>
-        <form action="/" method="post" onsubmit="showLoadingMessage()">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required><br><br>
+        
+        {% if success %}
+            <div class="alert alert-success" role="alert">
+                The containers are being created! You will receive an email once the setup is complete.
+            </div>
+        {% endif %}
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required><br><br>
-
-            <label for="odoo_version">Odoo Version (optional):</label>
-            <input type="text" id="odoo_version" name="odoo_version"><br><br>
-
-            <label for="postgres_version">PostgreSQL Version (optional):</label>
-            <input type="text" id="postgres_version" name="postgres_version"><br><br>
-
-            <input type="submit" value="Start Odoo">
+        <form action="/" method="post">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="odoo_version">Odoo Version (optional):</label>
+                <input type="text" class="form-control" id="odoo_version" name="odoo_version">
+            </div>
+            
+            <div class="form-group">
+                <label for="postgres_version">PostgreSQL Version (optional):</label>
+                <input type="text" class="form-control" id="postgres_version" name="postgres_version">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Start Odoo</button>
         </form>
-
-        <div id="loadingMessage">
-            This may take some time, so please wait and don't leave the page...
-        </div>
     </div>
 
-    <script>
-        function showLoadingMessage() {
-            // Display the loading message when the form is submitted
-            document.getElementById('loadingMessage').style.display = 'block';
-        }
-    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
